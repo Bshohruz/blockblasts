@@ -2,678 +2,386 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Block Blast</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kodni Top</title>
 <style>
-  :root{
-    --bg1:#1A0B2E;
-    --bg2:#2D1B4E;
-    --panel:#241640;
-    --line:rgba(255,255,255,0.08);
-    --text:#F5EEFF;
-    --text-dim:#9C8FC2;
-    --gold:#FFC857;
-    --accent:#FF5C8A;
-    --cell-empty:#2A1B4A;
-    --cell-empty-2:#33234f;
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #39d353;
+    --accent-dim: #1f6f38;
+    --warn: #d29922;
+    --danger: #f85149;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
   }
-  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
-  html,body{
-    height:100%;
-    background:radial-gradient(ellipse at 50% -10%, var(--bg2) 0%, var(--bg1) 60%);
-    overflow:hidden;
-    font-family:'Segoe UI', system-ui, sans-serif;
-    color:var(--text);
-    touch-action:none;
-    user-select:none;
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 60px;
+    min-height: 100vh;
   }
-  #app{
-    position:relative;
-    width:100vw; height:100vh;
-    display:flex; flex-direction:column;
-    align-items:center;
-    z-index:1;
+  .wrap { width: 100%; max-width: 480px; }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 {
+    font-size: 22px;
+    margin: 0 0 6px;
+    letter-spacing: 0.5px;
   }
-  #confetti-bg{
-    position:fixed; inset:0; z-index:0; pointer-events:none;
-    background:
-      radial-gradient(3px 3px at 15% 20%, #FF5C8A55, transparent),
-      radial-gradient(2px 2px at 80% 15%, #FFC85755, transparent),
-      radial-gradient(2.5px 2.5px at 60% 75%, #5CE1E655, transparent),
-      radial-gradient(2px 2px at 30% 85%, #7CFF9955, transparent),
-      radial-gradient(2px 2px at 90% 60%, #C77CFF55, transparent);
+  header h1 .cursor {
+    display: inline-block;
+    width: 10px; height: 20px;
+    background: var(--accent);
+    margin-left: 6px;
+    animation: blink 1s step-end infinite;
+    vertical-align: middle;
   }
+  @keyframes blink { 50% { opacity: 0; } }
+  header p { color: var(--muted); font-size: 13px; margin: 0; }
 
-  /* ---- HUD ---- */
-  #hud{
-    width:100%; max-width:520px;
-    display:flex; justify-content:space-between; align-items:center;
-    padding:14px 18px 4px;
-    z-index:5;
+  .rules {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    line-height: 1.6;
   }
-  #logo{
-    font-size:17px; font-weight:800; letter-spacing:1px;
-    color:var(--gold);
-    text-shadow:0 0 14px rgba(255,200,87,0.5);
-  }
-  #logo span{ color:var(--accent); }
-  .score-box{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    padding:6px 16px;
-    text-align:center;
-    min-width:76px;
-  }
-  .score-label{ font-size:9px; letter-spacing:2px; text-transform:uppercase; color:var(--text-dim); }
-  .score-num{ font-size:20px; font-weight:800; color:var(--text); }
-  #scores-wrap{ display:flex; gap:8px; }
+  .rules b { color: var(--text); }
 
-  /* ---- Board ---- */
-  #board-wrap{
-    margin-top:14px;
-    display:flex; align-items:center; justify-content:center;
-    z-index:2;
+  .board {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
   }
-  #board{
-    display:grid;
-    grid-template-columns:repeat(8, var(--cell));
-    grid-template-rows:repeat(8, var(--cell));
-    gap:3px;
-    background:var(--panel);
-    padding:8px;
-    border-radius:16px;
-    border:1px solid var(--line);
-    box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 10px;
   }
-  .cell{
-    width:var(--cell); height:var(--cell);
-    border-radius:6px;
-    background:var(--cell-empty);
-    transition:background 0.08s ease, transform 0.08s ease;
+  .row .idx { color: var(--muted); font-size: 11px; width: 18px; }
+  .pegs { display: flex; gap: 6px; flex: 1; }
+  .peg {
+    width: 34px; height: 34px;
+    border-radius: 6px;
+    background: #21262d;
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: bold;
+    color: var(--text);
   }
-  .cell.checker{ background:var(--cell-empty-2); }
-  .cell.filled{
-    box-shadow:inset 0 -4px 0 rgba(0,0,0,0.25), inset 0 3px 0 rgba(255,255,255,0.35);
-  }
-  .cell.preview-ok{ box-shadow:0 0 0 2px #7CFF99 inset, 0 0 10px #7CFF9977; }
-  .cell.preview-bad{ box-shadow:0 0 0 2px #FF5C6A inset, 0 0 10px #FF5C6A55; }
-  .cell.clearing{ animation:clearPop 0.32s ease forwards; }
-  @keyframes clearPop{
-    0%{ transform:scale(1); filter:brightness(2.2); }
-    100%{ transform:scale(0.2); filter:brightness(3); opacity:0; }
-  }
+  .feedback { display: flex; gap: 4px; align-items: center; min-width: 70px; justify-content: flex-end; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.exact { background: var(--accent); }
+  .dot.partial { background: var(--warn); }
+  .dot.none { background: #30363d; }
 
-  /* ---- Tray ---- */
-  #tray{
-    margin-top:18px;
-    display:flex; gap:10px;
-    z-index:5;
-    width:100%; max-width:520px;
-    justify-content:center;
-    padding:0 10px;
+  .input-area {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
   }
-  .piece-slot{
-    flex:1;
-    max-width:150px;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:14px;
-    display:flex; align-items:center; justify-content:center;
-    min-height:88px;
-    position:relative;
+  .digits { display: flex; gap: 8px; margin-bottom: 12px; justify-content: center; }
+  .digit-slot {
+    width: 44px; height: 44px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: bold;
+    background: #0d1117;
+    transition: border-color 0.15s;
   }
-  .piece-slot.used{ opacity:0.25; }
-  .piece-grid{
-    display:grid;
-    gap:2px;
-    pointer-events:none;
-  }
-  .piece-cell{
-    border-radius:4px;
-    box-shadow:inset 0 -3px 0 rgba(0,0,0,0.25), inset 0 2px 0 rgba(255,255,255,0.3);
-  }
-  .piece-cell.empty{ background:transparent; box-shadow:none; }
+  .digit-slot.filled { border-color: var(--accent-dim); color: var(--accent); }
 
-  /* dragging ghost */
-  #drag-ghost{
-    position:fixed; top:0; left:0;
-    display:none;
-    pointer-events:none;
-    z-index:50;
-    gap:3px;
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
   }
-  .ghost-cell{
-    border-radius:6px;
-    box-shadow:inset 0 -4px 0 rgba(0,0,0,0.25), inset 0 3px 0 rgba(255,255,255,0.35);
-    opacity:0.92;
+  .key {
+    padding: 10px 0;
+    background: #21262d;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.05s;
   }
-  .ghost-cell.empty{ background:transparent; box-shadow:none; }
+  .key:hover { background: #2d333b; }
+  .key:active { transform: scale(0.95); }
+  .key:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* ---- Overlays ---- */
-  #overlay{
-    position:absolute; inset:0; z-index:30;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(10,4,24,0.75);
-    backdrop-filter:blur(3px);
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    flex: 1;
+    padding: 11px 0;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 13px;
+    cursor: pointer;
+    background: #21262d;
+    color: var(--text);
   }
-  #overlay-card{
-    background:linear-gradient(180deg, #2A1A4C 0%, #1D1038 100%);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:22px;
-    padding:34px 36px;
-    text-align:center;
-    max-width:340px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  .btn.primary {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #dcffe4;
+    font-weight: bold;
   }
-  #overlay-card h1{
-    font-size:26px; margin-bottom:6px; color:var(--gold);
-    text-shadow:0 0 16px rgba(255,200,87,0.5);
-  }
-  #overlay-card p{ color:var(--text-dim); font-size:14px; line-height:1.55; margin-bottom:18px; }
-  .btn{
-    background:linear-gradient(180deg, var(--accent) 0%, #C93E6C 100%);
-    color:#fff; border:none; border-radius:12px;
-    padding:13px 30px; font-size:15px; font-weight:800;
-    cursor:pointer; letter-spacing:0.5px;
-    box-shadow:0 6px 20px rgba(255,92,138,0.45);
-  }
-  .btn:active{ transform:scale(0.96); }
+  .btn.primary:disabled { opacity: 0.35; cursor: not-allowed; }
+  .btn:hover:not(:disabled) { filter: brightness(1.15); }
 
-  #sound-toggle{
-    position:absolute; bottom:16px; right:16px; z-index:10;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:50%;
-    width:42px; height:42px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:17px; cursor:pointer;
+  .status {
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 18px;
   }
-  #combo-flash{
-    position:absolute; z-index:20; font-weight:900; font-size:26px;
-    pointer-events:none; color:var(--gold);
-    text-shadow:0 0 16px rgba(255,200,87,0.7);
-    animation:comboPop 0.9s ease-out forwards;
-  }
-  @keyframes comboPop{
-    0%{ opacity:0; transform:translate(-50%,-50%) scale(0.5); }
-    20%{ opacity:1; transform:translate(-50%,-50%) scale(1.15); }
-    100%{ opacity:0; transform:translate(-50%,-70%) scale(1); }
+  .status.win { color: var(--accent); font-weight: bold; }
+  .status.lose { color: var(--danger); font-weight: bold; }
+
+  .newgame {
+    display: none;
+    width: 100%;
+    margin-top: 12px;
+    padding: 12px 0;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-weight: bold;
+    cursor: pointer;
   }
 </style>
 </head>
 <body>
-<div id="confetti-bg"></div>
-<div id="app">
-  <div id="hud">
-    <div id="logo">Block<span>Blast</span></div>
-    <div id="scores-wrap">
-      <div class="score-box">
-        <div class="score-label">Ochko</div>
-        <div class="score-num" id="score-val">0</div>
-      </div>
-      <div class="score-box">
-        <div class="score-label">Rekord</div>
-        <div class="score-num" id="best-val">0</div>
-      </div>
+<div class="wrap">
+  <header>
+    <h1>KODNI_TOP<span class="cursor"></span></h1>
+    <p>4 xonali maxfiy kodni toping</p>
+  </header>
+
+  <div class="rules">
+    Men 4 xonali (0–9, takrorlanmaydigan) maxfiy kod o'yladim.
+    Har urinishdan keyin: <b style="color:var(--accent)">●</b> yashil = to'g'ri raqam, to'g'ri joyda.
+    <b style="color:var(--warn)">●</b> sariq = raqam bor, lekin joyi noto'g'ri.
+    Sizda <b>8 ta</b> urinish bor.
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <div class="input-area">
+    <div class="digits" id="digits">
+      <div class="digit-slot" data-i="0"></div>
+      <div class="digit-slot" data-i="1"></div>
+      <div class="digit-slot" data-i="2"></div>
+      <div class="digit-slot" data-i="3"></div>
     </div>
-  </div>
-
-  <div id="board-wrap">
-    <div id="board"></div>
-  </div>
-
-  <div id="tray">
-    <div class="piece-slot" id="slot-0"></div>
-    <div class="piece-slot" id="slot-1"></div>
-    <div class="piece-slot" id="slot-2"></div>
-  </div>
-
-  <div id="sound-toggle">🔊</div>
-
-  <div id="overlay">
-    <div id="overlay-card">
-      <h1>Block Blast</h1>
-      <p>Bo'laklarni katakchalarga joylashtir. Qatorni yoki ustunni to'liq to'ldirsang — u portlab, ochko beradi. Joy qolmasa — o'yin tugaydi!</p>
-      <button class="btn" id="start-btn">Kirish — o'ynash</button>
+    <div class="keypad" id="keypad"></div>
+    <div class="actions">
+      <button class="btn" id="clearBtn">Tozalash</button>
+      <button class="btn primary" id="submitBtn" disabled>Tekshirish</button>
     </div>
+    <div class="status" id="status">Kod kiriting...</div>
+    <button class="newgame" id="newGameBtn">Yangi o'yin ↻</button>
   </div>
 </div>
 
-<div id="drag-ghost"></div>
-
 <script>
-(function(){
-  const SIZE = 8;
-  const board = document.getElementById('board');
-  const scoreVal = document.getElementById('score-val');
-  const bestVal = document.getElementById('best-val');
-  const overlay = document.getElementById('overlay');
-  const overlayCard = document.getElementById('overlay-card');
-  const startBtn = document.getElementById('start-btn');
-  const soundToggle = document.getElementById('sound-toggle');
-  const trayEl = document.getElementById('tray');
-  const ghost = document.getElementById('drag-ghost');
-  const app = document.getElementById('app');
+(function() {
+  const MAX_TRIES = 8;
+  let secret = [];
+  let current = [];
+  let tries = 0;
+  let gameOver = false;
 
-  let grid = []; // {color: null|string}
-  let cellEls = [];
-  let score = 0, best = 0;
-  let running = false;
-  let soundOn = true;
-  let tray = [null, null, null];
-  let cellPx = 38;
+  const boardEl = document.getElementById('board');
+  const digitsEl = document.getElementById('digits');
+  const keypadEl = document.getElementById('keypad');
+  const submitBtn = document.getElementById('submitBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const statusEl = document.getElementById('status');
+  const newGameBtn = document.getElementById('newGameBtn');
 
-  // ---- Colors ----
-  const PALETTE = [
-    '#FF5C8A', '#FFC857', '#5CE1E6', '#7CFF99', '#C77CFF', '#FF9F5C', '#5C8AFF'
-  ];
-
-  // ---- Shapes (row,col offsets) ----
-  const SHAPES = [
-    [[0,0]],
-    [[0,0],[0,1]],
-    [[0,0],[1,0]],
-    [[0,0],[0,1],[0,2]],
-    [[0,0],[1,0],[2,0]],
-    [[0,0],[0,1],[0,2],[0,3]],
-    [[0,0],[1,0],[2,0],[3,0]],
-    [[0,0],[0,1],[1,0],[1,1]],
-    [[0,0],[0,1],[1,0]],
-    [[0,0],[0,1],[1,1]],
-    [[0,0],[1,0],[1,1]],
-    [[1,0],[0,0],[0,1]],
-    [[0,0],[0,1],[0,2],[1,0]],
-    [[0,0],[0,1],[0,2],[1,2]],
-    [[1,0],[1,1],[1,2],[0,0]],
-    [[1,0],[1,1],[1,2],[0,2]],
-    [[0,0],[1,0],[2,0],[1,1]],
-    [[0,0],[1,0],[2,0],[0,1]],
-    [[0,0],[1,0],[2,0],[2,1]],
-    [[0,1],[1,0],[1,1],[2,1]],
-    [[0,0],[0,1],[1,1],[1,2]],
-    [[0,1],[0,2],[1,0],[1,1]],
-    [[0,0],[0,1],[0,2],[1,1]],
-  ];
-
-  // ---- Audio ----
-  let audioCtx = null;
-  function ensureAudio(){
-    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-  }
-  function playTone(freq, dur, type, vol, when){
-    if(!soundOn || !audioCtx) return;
-    const t = audioCtx.currentTime + (when||0);
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = type || 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(vol||0.15, t+0.015);
-    gain.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    osc.connect(gain).connect(audioCtx.destination);
-    osc.start(t); osc.stop(t+dur+0.05);
-  }
-  function placeSound(){ playTone(420,0.09,'triangle',0.13); }
-  function clearSound(n){
-    const base = [660,880,1046,1318,1568];
-    for(let i=0;i<Math.min(n,base.length);i++) playTone(base[i],0.22,'triangle',0.16,i*0.06);
-  }
-  function invalidSound(){ playTone(140,0.15,'sawtooth',0.12); }
-  function gameOverSound(){
-    [392,349,294,220].forEach((f,i)=>playTone(f,0.35,'sawtooth',0.14,i*0.15));
+  function generateSecret() {
+    const digits = [0,1,2,3,4,5,6,7,8,9];
+    for (let i = digits.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [digits[i], digits[j]] = [digits[j], digits[i]];
+    }
+    return digits.slice(0, 4);
   }
 
-  let musicTimer = null;
-  const melody = [392.0,523.2,659.2,523.2, 440.0,587.3,698.5,587.3, 349.2,440.0,523.2,440.0, 392.0,523.2,587.3,659.2];
-  let mIdx = 0;
-  function startMusic(){
-    if(musicTimer) return;
-    mIdx = 0;
-    musicTimer = setInterval(()=>{
-      if(!soundOn || !running) return;
-      const f = melody[mIdx % melody.length];
-      playTone(f, 0.2, 'sine', 0.05);
-      if(mIdx % 4 === 0) playTone(f/2, 0.35, 'triangle', 0.035);
-      mIdx++;
-    }, 190);
+  function buildKeypad() {
+    keypadEl.innerHTML = '';
+    for (let d = 0; d <= 9; d++) {
+      const btn = document.createElement('button');
+      btn.className = 'key';
+      btn.textContent = d;
+      btn.dataset.digit = d;
+      btn.addEventListener('click', () => onKeyPress(d));
+      keypadEl.appendChild(btn);
+    }
   }
-  function stopMusic(){ if(musicTimer){ clearInterval(musicTimer); musicTimer = null; } }
-  soundToggle.addEventListener('click', ()=>{
-    soundOn = !soundOn;
-    soundToggle.textContent = soundOn ? '🔊' : '🔇';
+
+  function onKeyPress(d) {
+    if (gameOver || current.length >= 4) return;
+    if (current.includes(d)) {
+      flashStatus('Har raqam faqat bir marta ishlatilishi kerak!', false);
+      return;
+    }
+    current.push(d);
+    renderDigits();
+    submitBtn.disabled = current.length !== 4;
+    if (current.length === 4) statusEl.textContent = "Tayyor — 'Tekshirish' tugmasini bosing";
+  }
+
+  function renderDigits() {
+    const slots = digitsEl.querySelectorAll('.digit-slot');
+    slots.forEach((slot, i) => {
+      if (current[i] !== undefined) {
+        slot.textContent = current[i];
+        slot.classList.add('filled');
+      } else {
+        slot.textContent = '';
+        slot.classList.remove('filled');
+      }
+    });
+  }
+
+  function flashStatus(msg, ok) {
+    statusEl.textContent = msg;
+    statusEl.style.color = ok ? '' : 'var(--danger)';
+    setTimeout(() => { statusEl.style.color = ''; }, 900);
+  }
+
+  function evaluate(guess) {
+    let exact = 0, partial = 0;
+    guess.forEach((d, i) => {
+      if (d === secret[i]) exact++;
+      else if (secret.includes(d)) partial++;
+    });
+    return { exact, partial };
+  }
+
+  function addRow(guess, result, idx) {
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    const idxEl = document.createElement('div');
+    idxEl.className = 'idx';
+    idxEl.textContent = '#' + idx;
+    row.appendChild(idxEl);
+
+    const pegsEl = document.createElement('div');
+    pegsEl.className = 'pegs';
+    guess.forEach(d => {
+      const peg = document.createElement('div');
+      peg.className = 'peg';
+      peg.textContent = d;
+      pegsEl.appendChild(peg);
+    });
+    row.appendChild(pegsEl);
+
+    const fbEl = document.createElement('div');
+    fbEl.className = 'feedback';
+    for (let i = 0; i < result.exact; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot exact';
+      fbEl.appendChild(dot);
+    }
+    for (let i = 0; i < result.partial; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot partial';
+      fbEl.appendChild(dot);
+    }
+    row.appendChild(fbEl);
+
+    boardEl.prepend(row);
+  }
+
+  function submitGuess() {
+    if (current.length !== 4 || gameOver) return;
+    tries++;
+    const result = evaluate(current);
+    addRow(current, result, tries);
+
+    if (result.exact === 4) {
+      gameOver = true;
+      statusEl.textContent = `🎉 Tabriklaymiz! ${tries} urinishda topdingiz!`;
+      statusEl.className = 'status win';
+      endGame();
+    } else if (tries >= MAX_TRIES) {
+      gameOver = true;
+      statusEl.textContent = `😔 Urinishlar tugadi. Kod: ${secret.join('')}`;
+      statusEl.className = 'status lose';
+      endGame();
+    } else {
+      statusEl.textContent = `Urinish ${tries}/${MAX_TRIES}. Yana urinib ko'ring.`;
+      statusEl.className = 'status';
+    }
+
+    current = [];
+    renderDigits();
+    submitBtn.disabled = true;
+  }
+
+  function endGame() {
+    keypadEl.querySelectorAll('.key').forEach(k => k.disabled = true);
+    submitBtn.disabled = true;
+    clearBtn.disabled = true;
+    newGameBtn.style.display = 'block';
+  }
+
+  function startGame() {
+    secret = generateSecret();
+    current = [];
+    tries = 0;
+    gameOver = false;
+    boardEl.innerHTML = '';
+    renderDigits();
+    submitBtn.disabled = true;
+    clearBtn.disabled = false;
+    statusEl.textContent = 'Kod kiriting...';
+    statusEl.className = 'status';
+    newGameBtn.style.display = 'none';
+    buildKeypad();
+    console.log('(dev) maxfiy kod:', secret.join(''));
+  }
+
+  clearBtn.addEventListener('click', () => {
+    if (gameOver) return;
+    current = [];
+    renderDigits();
+    submitBtn.disabled = true;
+    statusEl.textContent = 'Kod kiriting...';
   });
 
-  // ---- Layout ----
-  function computeCellSize(){
-    const availW = Math.min(window.innerWidth - 24, 500);
-    const availH = window.innerHeight * 0.5;
-    cellPx = Math.floor(Math.min(availW - 22, availH) / SIZE);
-    cellPx = Math.max(28, Math.min(46, cellPx));
-    document.documentElement.style.setProperty('--cell', cellPx + 'px');
-  }
-  window.addEventListener('resize', computeCellSize);
+  submitBtn.addEventListener('click', submitGuess);
+  newGameBtn.addEventListener('click', startGame);
 
-  // ---- Board setup ----
-  function buildBoard(){
-    board.innerHTML = '';
-    grid = [];
-    cellEls = [];
-    for(let r=0;r<SIZE;r++){
-      grid.push(new Array(SIZE).fill(null));
-      const rowEls = [];
-      for(let c=0;c<SIZE;c++){
-        const cell = document.createElement('div');
-        cell.className = 'cell' + (((r+c)%2===0) ? ' checker' : '');
-        cell.dataset.r = r; cell.dataset.c = c;
-        board.appendChild(cell);
-        rowEls.push(cell);
-      }
-      cellEls.push(rowEls);
-    }
-  }
-
-  function renderCell(r,c){
-    const el = cellEls[r][c];
-    const color = grid[r][c];
-    el.classList.remove('preview-ok','preview-bad');
-    if(color){
-      el.classList.add('filled');
-      el.style.background = color;
-    } else {
-      el.classList.remove('filled');
-      el.style.background = '';
-    }
-  }
-
-  function renderAll(){
-    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++) renderCell(r,c);
-  }
-
-  // ---- Piece generation ----
-  function randomShape(){
-    const shape = SHAPES[Math.floor(Math.random()*SHAPES.length)];
-    const color = PALETTE[Math.floor(Math.random()*PALETTE.length)];
-    return { shape, color };
-  }
-
-  function fillTray(){
-    for(let i=0;i<3;i++){
-      if(!tray[i]) tray[i] = randomShape();
-    }
-    renderTray();
-    checkGameOver();
-  }
-
-  function shapeBounds(shape){
-    let maxR=0, maxC=0;
-    shape.forEach(([r,c])=>{ maxR=Math.max(maxR,r); maxC=Math.max(maxC,c); });
-    return {rows:maxR+1, cols:maxC+1};
-  }
-
-  function renderTray(){
-    for(let i=0;i<3;i++){
-      const slot = document.getElementById('slot-'+i);
-      slot.innerHTML = '';
-      slot.classList.remove('used');
-      const piece = tray[i];
-      if(!piece){ slot.classList.add('used'); continue; }
-      const {rows, cols} = shapeBounds(piece.shape);
-      const pcell = Math.max(16, Math.min(24, Math.floor(90/Math.max(rows,cols))));
-      const g = document.createElement('div');
-      g.className = 'piece-grid';
-      g.style.gridTemplateColumns = `repeat(${cols}, ${pcell}px)`;
-      g.style.gridTemplateRows = `repeat(${rows}, ${pcell}px)`;
-      const occupied = new Set(piece.shape.map(([r,c])=>r+','+c));
-      for(let r=0;r<rows;r++){
-        for(let c=0;c<cols;c++){
-          const pc = document.createElement('div');
-          if(occupied.has(r+','+c)){
-            pc.className = 'piece-cell';
-            pc.style.background = piece.color;
-            pc.style.width = pcell+'px';
-            pc.style.height = pcell+'px';
-          } else {
-            pc.className = 'piece-cell empty';
-          }
-          g.appendChild(pc);
-        }
-      }
-      slot.appendChild(g);
-      slot.dataset.pieceIdx = i;
-      attachDrag(slot, i);
-    }
-  }
-
-  // ---- Placement validation ----
-  function canPlace(shape, originR, originC){
-    for(const [dr,dc] of shape){
-      const r = originR+dr, c = originC+dc;
-      if(r<0||r>=SIZE||c<0||c>=SIZE) return false;
-      if(grid[r][c]) return false;
-    }
-    return true;
-  }
-
-  function canPlaceAnywhere(shape){
-    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
-      if(canPlace(shape,r,c)) return true;
-    }
-    return false;
-  }
-
-  function checkGameOver(){
-    const anyLeft = tray.some(p=>p && canPlaceAnywhere(p.shape));
-    if(!anyLeft && tray.some(p=>p)){
-      endGame();
-    }
-  }
-
-  // ---- Placing + clearing ----
-  function placePiece(pieceIdx, originR, originC){
-    const piece = tray[pieceIdx];
-    if(!piece || !canPlace(piece.shape, originR, originC)) return false;
-    piece.shape.forEach(([dr,dc])=>{
-      grid[originR+dr][originC+dc] = piece.color;
-    });
-    tray[pieceIdx] = null;
-    score += piece.shape.length * 2;
-    placeSound();
-    renderAll();
-    resolveLines();
-    updateHUD();
-    renderTray();
-    if(tray.every(p=>p===null)){
-      fillTray();
-    } else {
-      checkGameOver();
-    }
-    return true;
-  }
-
-  function resolveLines(){
-    const fullRows = [];
-    const fullCols = [];
-    for(let r=0;r<SIZE;r++){
-      if(grid[r].every(v=>v)) fullRows.push(r);
-    }
-    for(let c=0;c<SIZE;c++){
-      let full = true;
-      for(let r=0;r<SIZE;r++){ if(!grid[r][c]){ full=false; break; } }
-      if(full) fullCols.push(c);
-    }
-    const total = fullRows.length + fullCols.length;
-    if(total === 0) return;
-
-    const toClear = new Set();
-    fullRows.forEach(r=>{ for(let c=0;c<SIZE;c++) toClear.add(r+','+c); });
-    fullCols.forEach(c=>{ for(let r=0;r<SIZE;r++) toClear.add(r+','+c); });
-
-    toClear.forEach(key=>{
-      const [r,c] = key.split(',').map(Number);
-      cellEls[r][c].classList.add('clearing');
-    });
-
-    clearSound(total);
-    const bonus = total*30 + Math.max(0,total-1)*20;
-    score += bonus;
-    showCombo(total, bonus);
-
-    setTimeout(()=>{
-      toClear.forEach(key=>{
-        const [r,c] = key.split(',').map(Number);
-        grid[r][c] = null;
-        cellEls[r][c].classList.remove('clearing');
-      });
-      renderAll();
-      updateHUD();
-    }, 260);
-  }
-
-  function showCombo(n, bonus){
-    const f = document.createElement('div');
-    f.id = 'combo-flash';
-    f.textContent = n>1 ? `${n}x KOMBO! +${bonus}` : `+${bonus}`;
-    const rect = board.getBoundingClientRect();
-    f.style.left = (rect.left+rect.width/2)+'px';
-    f.style.top = (rect.top+rect.height/2)+'px';
-    document.body.appendChild(f);
-    setTimeout(()=>f.remove(), 900);
-  }
-
-  function updateHUD(){
-    scoreVal.textContent = score;
-    if(score>best){ best = score; }
-    bestVal.textContent = best;
-  }
-
-  // ---- Drag & drop ----
-  let dragState = null;
-
-  function attachDrag(slot, idx){
-    slot.onpointerdown = (e)=>{
-      if(!running) return;
-      const piece = tray[idx];
-      if(!piece) return;
-      ensureAudio();
-      e.preventDefault();
-      const {rows, cols} = shapeBounds(piece.shape);
-      dragState = { idx, piece, rows, cols, offsetR:0, offsetC:0 };
-      buildGhost(piece, rows, cols);
-      moveGhost(e.clientX, e.clientY);
-      document.onpointermove = onDragMove;
-      document.onpointerup = onDragEnd;
-    };
-  }
-
-  function buildGhost(piece, rows, cols){
-    ghost.innerHTML = '';
-    ghost.style.gridTemplateColumns = `repeat(${cols}, ${cellPx}px)`;
-    ghost.style.gridTemplateRows = `repeat(${rows}, ${cellPx}px)`;
-    ghost.style.display = 'grid';
-    const occupied = new Set(piece.shape.map(([r,c])=>r+','+c));
-    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
-      const gc = document.createElement('div');
-      if(occupied.has(r+','+c)){
-        gc.className = 'ghost-cell';
-        gc.style.width = cellPx+'px'; gc.style.height = cellPx+'px';
-        gc.style.background = piece.color;
-      } else {
-        gc.className = 'ghost-cell empty';
-        gc.style.width = cellPx+'px'; gc.style.height = cellPx+'px';
-      }
-      ghost.appendChild(gc);
-    }
-  }
-
-  function moveGhost(x,y){
-    const w = dragState.cols*cellPx + (dragState.cols-1)*3;
-    const h = dragState.rows*cellPx + (dragState.rows-1)*3;
-    ghost.style.left = (x - w/2) + 'px';
-    ghost.style.top = (y - h*1.4) + 'px';
-  }
-
-  function clearPreview(){
-    for(let r=0;r<SIZE;r++) for(let c=0;c<SIZE;c++){
-      cellEls[r][c].classList.remove('preview-ok','preview-bad');
-    }
-  }
-
-  function boardOriginFromPointer(x,y){
-    const rect = board.getBoundingClientRect();
-    const pad = 8;
-    const gap = 3;
-    const w = dragState.cols*cellPx + (dragState.cols-1)*gap;
-    const h = dragState.rows*cellPx + (dragState.rows-1)*gap;
-    const dropX = x - w/2;
-    const dropY = y - h*1.4;
-    const localX = dropX - rect.left - pad;
-    const localY = dropY - rect.top - pad;
-    const col = Math.round(localX / (cellPx+gap));
-    const row = Math.round(localY / (cellPx+gap));
-    return {row, col};
-  }
-
-  function onDragMove(e){
-    if(!dragState) return;
-    moveGhost(e.clientX, e.clientY);
-    const {row, col} = boardOriginFromPointer(e.clientX, e.clientY);
-    clearPreview();
-    const valid = canPlace(dragState.piece.shape, row, col);
-    dragState.piece.shape.forEach(([dr,dc])=>{
-      const r = row+dr, c = col+dc;
-      if(r>=0&&r<SIZE&&c>=0&&c<SIZE){
-        cellEls[r][c].classList.add(valid ? 'preview-ok' : 'preview-bad');
-      }
-    });
-    dragState.lastRow = row; dragState.lastCol = col; dragState.lastValid = valid;
-  }
-
-  function onDragEnd(e){
-    document.onpointermove = null;
-    document.onpointerup = null;
-    if(!dragState) return;
-    clearPreview();
-    ghost.style.display = 'none';
-    if(dragState.lastValid){
-      placePiece(dragState.idx, dragState.lastRow, dragState.lastCol);
-    } else {
-      invalidSound();
-    }
-    dragState = null;
-  }
-
-  // ---- Game flow ----
-  function endGame(){
-    running = false;
-    stopMusic();
-    gameOverSound();
-    overlay.style.display = 'flex';
-    overlayCard.innerHTML = `
-      <h1>O'yin tugadi</h1>
-      <p>Yakuniy ochko: <b style="color:var(--gold)">${score}</b><br>Rekord: <b style="color:var(--gold)">${best}</b></p>
-      <button class="btn" id="restart-btn">Qayta o'ynash</button>
-    `;
-    document.getElementById('restart-btn').addEventListener('click', startGame);
-  }
-
-  function startGame(){
-    ensureAudio();
-    computeCellSize();
-    score = 0;
-    updateHUD();
-    buildBoard();
-    tray = [null,null,null];
-    fillTray();
-    overlay.style.display = 'none';
-    running = true;
-    startMusic();
-  }
-
-  computeCellSize();
-  buildBoard();
-  startBtn.addEventListener('click', startGame);
+  startGame();
 })();
 </script>
 </body>
